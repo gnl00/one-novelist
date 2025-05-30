@@ -1,8 +1,18 @@
 package one.nvl.agent;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import one.nvl.SysPrompt;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.PromptTemplate;
+import reactor.core.publisher.Flux;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class OutlineAgent {
@@ -15,17 +25,40 @@ public class OutlineAgent {
 
     public String createOutlineStream(String theme) {
         log.info("OutlineAgent#createOutlineStream");
-        return chatClient.prompt().user(u -> u.text(SysPrompt.OUTLINE_CONTEXT_PROMPT).param("theme", theme)).call().content();
+
+        Flux<ChatClientResponse> response = chatClient.prompt().user(u -> u.text(SysPrompt.OUTLINE_CONTEXT_PROMPT).param("theme", theme)).stream().chatClientResponse();
+        AtomicReference<String> outline = new AtomicReference<>();
+        response.subscribe(resp -> {
+            String ctx = "";
+            if (null != resp.chatResponse() && null != resp.chatResponse().getResult()) {
+                String text = resp.chatResponse().getResult().getOutput().getText();
+                System.out.print(text);
+                ctx += resp.chatResponse().getResult().getOutput().getText();
+            }
+            outline.set(ctx);
+        });
+        return outline.get();
     }
 
-    public String createOutline(String theme) {
+    public Obj createOutline(String theme) {
         log.info("OutlineAgent#createOutline");
-        return chatClient.prompt().user(u -> u.text(SysPrompt.OUTLINE_CONTEXT_PROMPT).param("theme", theme)).call().content();
+
+        Prompt prompt = PromptTemplate.builder().template(SysPrompt.OUTLINE_CONTEXT_PROMPT).variables(Map.of("theme", theme, "output", SysPrompt.OUTLINE_CONTEXT_OUTPUT_PROMPT)).build().create();
+
+        Obj obj = chatClient.prompt(prompt).call().entity(Obj.class);
+        // return chatClient.prompt().user(u -> u.text(SysPrompt.OUTLINE_CONTEXT_PROMPT).param("theme", theme)).call().content();
+        return obj;
+    }
+
+    @Data
+    public static class Obj {
+        private List<Map<Object, Object>> catalogs;
+        private String outline;
     }
 
     public String createCatalog(String outline) {
         log.info("OutlineAgent#createCatalog");
-        /*List<Catalog> catalogs = chatClient.prompt(outline).user(u -> u.text(SysPrompt.OUTLINE_CATALOG_PROMPT_V2)).call().entity(new ParameterizedTypeReference<List<Catalog>>() {
+        /*chatClient.prompt(outline).user(u -> u.text(SysPrompt.OUTLINE_CATALOG_PROMPT_V2)).call().entity(new ParameterizedTypeReference<List<>>() {
         });
         return catalogs;*/
 

@@ -52,12 +52,12 @@ public class Application {
                         String abstracts = "";
                         Map<String, Map<String, String>> catalogMap = new HashMap<>();
                         if (init) {
-                            outline = playwright.createOutline(input);;
-                            System.out.printf("\nOUTLINE:=>\n%s", outline);
-                            catalog = playwright.createCatalog(outline);
-                            System.out.printf("\nCATALOG:=>\n%s", catalog);
-                            abstracts = novelist.produceAbstractV2(outline, catalog);
-                            System.out.printf("\nABSTRACTS:=>\n%s", abstracts);
+                            OutlineAgent.Obj outline1 = playwright.createOutline(input);
+                            System.out.printf("\nOUTLINE:=>\n%s", outline1);
+                            // catalog = playwright.createCatalog(outline);
+                            // System.out.printf("\nCATALOG:=>\n%s", catalog);
+                            // abstracts = novelist.produceAbstractV2(outline, catalog);
+                            // System.out.printf("\nABSTRACTS:=>\n%s", abstracts);
                             init = false;
                         } else {
                             String[] inputs = input.split("/");
