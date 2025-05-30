@@ -1,0 +1,33 @@
+spring:
+  ai:
+    openai:
+      api-key: sk-xxx
+      base-url: https://api
+      chat:
+        options:
+          model: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+
+chat:
+  model:
+    custom:
+      api-key: sk-xxx
+      base-url: https://api
+      model-name: Qwen/Qwen3-30B-A3B
+    siliconflow:
+      api-key: sk-xxx
+      base-url: https://api
+      model-name: Qwen/Qwen3-30B-A3B
+
+# deepseek-ai/DeepSeek-R1-Distill-Llama-70B
+# deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+# Qwen/Qwen3-30B-A3B GOOD
+# Qwen/Qwen3-235B-A22B with-thinking
+# Doubao-1.5-lite-32k
+# Doubao-1.5-pro-32k
+# hunyuan-standard
+
+logging:
+  level:
+    org:
+      springframework:
+        ai: debug
