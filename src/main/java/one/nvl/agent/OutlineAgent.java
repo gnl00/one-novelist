@@ -2,11 +2,7 @@ package one.nvl.agent;
 
 import lombok.extern.slf4j.Slf4j;
 import one.nvl.SysPrompt;
-import one.nvl.domain.Catalog;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.core.ParameterizedTypeReference;
-
-import java.util.List;
 
 @Slf4j
 public class OutlineAgent {
@@ -15,6 +11,11 @@ public class OutlineAgent {
 
     public OutlineAgent(ChatClient chatClient) {
         this.chatClient = chatClient;
+    }
+
+    public String createOutlineStream(String theme) {
+        log.info("OutlineAgent#createOutlineStream");
+        return chatClient.prompt().user(u -> u.text(SysPrompt.OUTLINE_CONTEXT_PROMPT).param("theme", theme)).call().content();
     }
 
     public String createOutline(String theme) {
@@ -27,6 +28,10 @@ public class OutlineAgent {
         /*List<Catalog> catalogs = chatClient.prompt(outline).user(u -> u.text(SysPrompt.OUTLINE_CATALOG_PROMPT_V2)).call().entity(new ParameterizedTypeReference<List<Catalog>>() {
         });
         return catalogs;*/
-        return chatClient.prompt(outline).user(u -> u.text(SysPrompt.OUTLINE_CATALOG_PROMPT)).call().content();
+
+        String input = SysPrompt.OUTLINE_CATALOG_PROMPT +
+                "\n---\n##大纲内容：\n" + outline;
+
+        return chatClient.prompt().user(u -> u.text(input)).call().content();
     }
 }

@@ -2,7 +2,10 @@ package one.nvl.agent;
 
 import one.nvl.SysPrompt;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.util.Assert;
+import org.springframework.ai.chat.client.ChatClientResponse;
+import reactor.core.publisher.Flux;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class EditorAgent {
 
@@ -13,19 +16,46 @@ public class EditorAgent {
     }
 
     public String edit(String outline, String catalog, String abstracts, String content) {
-        Assert.notNull(outline, "outline must not be null");
-        Assert.notNull(catalog, "catalog must not be null");
-        Assert.notNull(abstracts, "abstracts must not be null");
-        Assert.notNull(content, "context must not be null");
 
         String prompt = SysPrompt.EDITOR_EDIT_PROMPT
                 + "\n大纲：\n" + outline
                 + "\n目录：\n" + catalog
                 + "\n章节摘要：\n" + abstracts
-                + "\n待编辑章节内容：\n" + content
+                + "\n待优化章节内容：\n" + content
                 ;
 
-        return chatClient.prompt(prompt).call().content();
+        Flux<ChatClientResponse> response = chatClient.prompt(prompt).stream().chatClientResponse();
+        AtomicReference<String> edited = new AtomicReference<>("");
+        response.subscribe(resp -> {
+            String ctx = "";
+            if (null != resp.chatResponse() && null != resp.chatResponse().getResult()) {
+                System.out.print(resp.chatResponse().getResult().getOutput().getText());
+                ctx += resp.chatResponse().getResult().getOutput().getText();
+            }
+            edited.set(ctx);
+        });
+
+        return edited.get();
     }
 
+    public String audit(String abstracts, String content) {
+
+        String prompt = SysPrompt.EDITOR_AUDIT_PROMPT
+                + "\n---\n摘要：\n" + abstracts
+                + "\n---\n待审核内容：\n" + content
+                ;
+
+        Flux<ChatClientResponse> response = chatClient.prompt(prompt).stream().chatClientResponse();
+        AtomicReference<String> audited = new AtomicReference<>("");
+        response.subscribe(resp -> {
+            String ctx = "";
+            if (null != resp.chatResponse() && null != resp.chatResponse().getResult()) {
+                System.out.print(resp.chatResponse().getResult().getOutput().getText());
+                ctx += resp.chatResponse().getResult().getOutput().getText();
+            }
+            audited.set(ctx);
+        });
+
+        return audited.get();
+    }
 }

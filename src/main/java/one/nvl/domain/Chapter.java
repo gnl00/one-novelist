@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import lombok.Data;
 
 @Data
-public class Character {
+public class Chapter {
 
     @JsonPropertyDescription("目录信息")
     private String catalogs;
